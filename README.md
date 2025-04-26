@@ -7,7 +7,7 @@ This script installs [Recyclarr](https://recyclarr.dev/), pulls your custom `rec
 Run this command on your Linux server:
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO_NAME/main/install-recyclarr.sh)
+bash <(curl -s https://raw.githubusercontent.com/RetroTrigger/Recyclarr-Installer/refs/heads/main/install-recyclarr.sh)
 ```
 
 Replace `YOUR_GITHUB_USER` and `YOUR_REPO_NAME` with your actual GitHub username and repository name.
