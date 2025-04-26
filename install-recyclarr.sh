@@ -1,0 +1,106 @@
+#!/bin/bash
+
+set -e
+
+# --- CONFIGURATION ---
+CONFIG_DIR="/etc/recyclarr"
+CONFIG_URL="https://gist.githubusercontent.com/RetroTrigger/081fef5ed7032196199286ee5af9892b/raw/ec53dc7f3a642b9df0a9e7a4d412fbec9e51b252/recyclarr.yml"  # <-- CHANGE THIS
+RECYCLARR_BIN="/usr/local/bin/recyclarr"
+CRON_JOB="0 4 * * 0 $RECYCLARR_BIN sync"
+TMP_DIR="/tmp/recyclarr_install"
+
+# --- Colors ---
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# --- Functions ---
+info() { echo -e "${YELLOW}[INFO]${NC} $1"; }
+success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
+
+# --- Start ---
+echo -e "${GREEN}
+██████  ███████  ██████ ██    ██ ██       █████  ██████  ██████  
+██   ██ ██      ██      ██    ██ ██      ██   ██ ██   ██ ██   ██ 
+██████  █████   ██      ██    ██ ██      ███████ ██████  ██   ██ 
+██   ██ ██      ██      ██    ██ ██      ██   ██ ██      ██   ██ 
+██   ██ ███████  ██████  ██████  ███████ ██   ██ ██      ██████  
+${NC}"
+
+info "Starting Recyclarr deluxe installer..."
+
+# --- Install Dependencies ---
+info "Installing required system packages..."
+sudo apt-get update
+sudo apt-get install -y curl unzip wget cron || error "Failed to install dependencies."
+
+# --- Install Recyclarr ---
+if [ ! -f "$RECYCLARR_BIN" ]; then
+  info "Downloading latest Recyclarr release..."
+  mkdir -p "$TMP_DIR"
+  curl -s https://api.github.com/repos/recyclarr/recyclarr/releases/latest \
+    | grep "browser_download_url.*linux-x64.zip" \
+    | cut -d '"' -f 4 \
+    | wget -i - -O "$TMP_DIR/recyclarr.zip"
+
+  info "Installing Recyclarr..."
+  unzip "$TMP_DIR/recyclarr.zip" -d "$TMP_DIR"
+  sudo mv "$TMP_DIR/recyclarr/recyclarr" "$RECYCLARR_BIN"
+  sudo chmod +x "$RECYCLARR_BIN"
+
+  rm -rf "$TMP_DIR"
+  success "Recyclarr installed successfully."
+else
+  success "Recyclarr already installed. Skipping install."
+fi
+
+# --- Setup Config Directory ---
+info "Setting up config directory at $CONFIG_DIR..."
+sudo mkdir -p "$CONFIG_DIR"
+sudo chown "$USER:$USER" "$CONFIG_DIR"
+
+# --- Download Config File ---
+info "Downloading recyclarr.yml from $CONFIG_URL..."
+curl -L "$CONFIG_URL" -o "$CONFIG_DIR/recyclarr.yml" || error "Failed to download recyclarr.yml."
+
+success "Config file placed at $CONFIG_DIR/recyclarr.yml."
+
+# --- Prompt for API Keys ---
+echo ""
+info "Please enter your Radarr API Key:"
+read -r RADARR_KEY
+info "Please enter your Sonarr API Key:"
+read -r SONARR_KEY
+
+# --- Inject API Keys into recyclarr.yml ---
+info "Injecting API keys into recyclarr.yml..."
+sed -i "s|RADARR_API_KEY_HERE|$RADARR_KEY|g" "$CONFIG_DIR/recyclarr.yml"
+sed -i "s|SONARR_API_KEY_HERE|$SONARR_KEY|g" "$CONFIG_DIR/recyclarr.yml"
+
+success "API keys injected successfully."
+
+# --- Setup Cron Job ---
+info "Setting up cron job to auto-sync every Sunday at 4 AM..."
+( crontab -l 2>/dev/null | grep -v 'recyclarr sync' ; echo "$CRON_JOB" ) | crontab -
+
+success "Cron job installed."
+
+# --- Test Installation ---
+info "Testing recyclarr version..."
+recyclarr version && success "Recyclarr CLI working!"
+
+# --- Done ---
+echo -e "${GREEN}
+Installation Complete! 🎉
+✅ Recyclarr installed at /usr/local/bin/recyclarr
+✅ Config installed at $CONFIG_DIR/recyclarr.yml
+✅ Sync scheduled every Sunday at 4AM.
+✅ API keys safely injected.
+
+You can manually run it now using:
+${YELLOW}recyclarr sync${NC}
+
+Enjoy!
+${NC}"
