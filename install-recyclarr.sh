@@ -38,14 +38,21 @@ sudo apt-get install -y curl unzip wget cron || error "Failed to install depende
 
 # --- Install Recyclarr ---
 if [ ! -f "$RECYCLARR_BIN" ]; then
-  info "Downloading latest Recyclarr release..."
+  info "Downloading Recyclarr release..."
   mkdir -p "$TMP_DIR"
-  # Use the latest release URL directly
-  DOWNLOAD_URL="https://github.com/recyclarr/recyclarr/releases/latest/download/recyclarr-linux-x64.zip"
-  info "Using latest release download URL"
   
+  # Hardcode a specific version that we know works
+  VERSION="5.0.0"
+  DOWNLOAD_URL="https://github.com/recyclarr/recyclarr/releases/download/v$VERSION/recyclarr-linux-x64.zip"
+  
+  info "Using version $VERSION"
   info "Downloading from: $DOWNLOAD_URL"
-  wget -q "$DOWNLOAD_URL" -O "$TMP_DIR/recyclarr.zip" || error "Failed to download Recyclarr zip file."
+  
+  # Add verbose output for wget to debug any issues
+  wget --verbose "$DOWNLOAD_URL" -O "$TMP_DIR/recyclarr.zip" || error "Failed to download Recyclarr zip file."
+  
+  # Check file exists and has content
+  ls -la "$TMP_DIR" || error "Cannot list temp directory"
   
   # Verify the download was successful
   if [ ! -s "$TMP_DIR/recyclarr.zip" ]; then
