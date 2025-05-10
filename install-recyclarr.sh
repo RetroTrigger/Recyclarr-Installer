@@ -40,10 +40,15 @@ sudo apt-get install -y curl unzip wget cron || error "Failed to install depende
 if [ ! -f "$RECYCLARR_BIN" ]; then
   info "Downloading latest Recyclarr release..."
   mkdir -p "$TMP_DIR"
-  curl -s https://api.github.com/repos/recyclarr/recyclarr/releases/latest \
-    | grep "browser_download_url.*linux-x64.zip" \
-    | cut -d '"' -f 4 \
-    | wget -i - -O "$TMP_DIR/recyclarr.zip"
+  DOWNLOAD_URL=$(curl -s https://api.github.com/repos/recyclarr/recyclarr/releases/latest \
+    | grep -o '"browser_download_url":.*linux-x64.zip"' \
+    | cut -d '"' -f 4)
+  
+  if [ -z "$DOWNLOAD_URL" ]; then
+    error "Failed to get download URL for Recyclarr. GitHub API may be rate-limited."
+  fi
+  
+  wget -q "$DOWNLOAD_URL" -O "$TMP_DIR/recyclarr.zip" || error "Failed to download Recyclarr zip file."
 
   info "Installing Recyclarr..."
   unzip "$TMP_DIR/recyclarr.zip" -d "$TMP_DIR"
