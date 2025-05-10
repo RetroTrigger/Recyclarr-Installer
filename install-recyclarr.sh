@@ -40,15 +40,9 @@ sudo apt-get install -y curl unzip wget cron || error "Failed to install depende
 if [ ! -f "$RECYCLARR_BIN" ]; then
   info "Downloading latest Recyclarr release..."
   mkdir -p "$TMP_DIR"
-  # Direct download approach instead of using GitHub API
-  LATEST_VERSION=$(curl -s https://github.com/recyclarr/recyclarr/releases/latest | grep -o 'tag/[^"]*' | head -1 | cut -d/ -f2)
-  
-  if [ -z "$LATEST_VERSION" ]; then
-    error "Failed to determine latest Recyclarr version."
-  fi
-  
-  info "Latest version: $LATEST_VERSION"
-  DOWNLOAD_URL="https://github.com/recyclarr/recyclarr/releases/download/$LATEST_VERSION/recyclarr-linux-x64.zip"
+  # Use the latest release URL directly
+  DOWNLOAD_URL="https://github.com/recyclarr/recyclarr/releases/latest/download/recyclarr-linux-x64.zip"
+  info "Using latest release download URL"
   
   info "Downloading from: $DOWNLOAD_URL"
   wget -q "$DOWNLOAD_URL" -O "$TMP_DIR/recyclarr.zip" || error "Failed to download Recyclarr zip file."
