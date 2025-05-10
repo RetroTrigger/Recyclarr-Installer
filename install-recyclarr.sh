@@ -40,15 +40,23 @@ sudo apt-get install -y curl unzip wget cron || error "Failed to install depende
 if [ ! -f "$RECYCLARR_BIN" ]; then
   info "Downloading latest Recyclarr release..."
   mkdir -p "$TMP_DIR"
-  DOWNLOAD_URL=$(curl -s https://api.github.com/repos/recyclarr/recyclarr/releases/latest \
-    | grep -o '"browser_download_url":.*linux-x64.zip"' \
-    | cut -d '"' -f 4)
+  # Direct download approach instead of using GitHub API
+  LATEST_VERSION=$(curl -s https://github.com/recyclarr/recyclarr/releases/latest | grep -o 'tag/[^"]*' | head -1 | cut -d/ -f2)
   
-  if [ -z "$DOWNLOAD_URL" ]; then
-    error "Failed to get download URL for Recyclarr. GitHub API may be rate-limited."
+  if [ -z "$LATEST_VERSION" ]; then
+    error "Failed to determine latest Recyclarr version."
   fi
   
+  info "Latest version: $LATEST_VERSION"
+  DOWNLOAD_URL="https://github.com/recyclarr/recyclarr/releases/download/$LATEST_VERSION/recyclarr-linux-x64.zip"
+  
+  info "Downloading from: $DOWNLOAD_URL"
   wget -q "$DOWNLOAD_URL" -O "$TMP_DIR/recyclarr.zip" || error "Failed to download Recyclarr zip file."
+  
+  # Verify the download was successful
+  if [ ! -s "$TMP_DIR/recyclarr.zip" ]; then
+    error "Downloaded file is empty. Download failed."
+  fi
 
   info "Installing Recyclarr..."
   unzip "$TMP_DIR/recyclarr.zip" -d "$TMP_DIR"
