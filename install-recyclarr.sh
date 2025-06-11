@@ -90,8 +90,15 @@ read -r SONARR_KEY
 
 # --- Inject API Keys into recyclarr.yml ---
 info "Injecting API keys into recyclarr.yml..."
-sed -i "s|RADARR_API_KEY_HERE|$RADARR_KEY|g" "$CONFIG_DIR/recyclarr.yml"
-sed -i "s|SONARR_API_KEY_HERE|$SONARR_KEY|g" "$CONFIG_DIR/recyclarr.yml"
+# Escape special characters in the provided API keys so sed does not
+# misinterpret them. This allows keys containing '/' or '&' to be
+# properly inserted into the configuration file.
+safe_radarr=${RADARR_KEY//&/\\&}
+safe_radarr=${safe_radarr//\//\\/}
+safe_sonarr=${SONARR_KEY//&/\\&}
+safe_sonarr=${safe_sonarr//\//\\/}
+sed -i "s|RADARR_API_KEY_HERE|$safe_radarr|g" "$CONFIG_DIR/recyclarr.yml"
+sed -i "s|SONARR_API_KEY_HERE|$safe_sonarr|g" "$CONFIG_DIR/recyclarr.yml"
 
 success "API keys injected successfully."
 
