@@ -33,8 +33,22 @@ info "Starting Recyclarr deluxe installer..."
 
 # --- Install Dependencies ---
 info "Installing required system packages..."
-sudo apt-get update
-sudo apt-get install -y curl unzip wget cron || error "Failed to install dependencies."
+if command -v apt-get >/dev/null 2>&1; then
+  sudo apt-get update
+  sudo apt-get install -y curl unzip wget cron || error "Failed to install dependencies."
+elif command -v dnf >/dev/null 2>&1; then
+  sudo dnf install -y curl unzip wget cronie || error "Failed to install dependencies."
+elif command -v yum >/dev/null 2>&1; then
+  sudo yum install -y curl unzip wget cronie || error "Failed to install dependencies."
+elif command -v pacman >/dev/null 2>&1; then
+  sudo pacman -Sy --noconfirm curl unzip wget cronie || error "Failed to install dependencies."
+elif command -v zypper >/dev/null 2>&1; then
+  sudo zypper install -y curl unzip wget cron || error "Failed to install dependencies."
+elif command -v apk >/dev/null 2>&1; then
+  sudo apk add --no-cache curl unzip wget cron || error "Failed to install dependencies."
+else
+  error "No compatible package manager found. Please install curl, unzip, wget, and cron manually."
+fi
 
 # --- Install Recyclarr ---
 if [ ! -f "$RECYCLARR_BIN" ]; then

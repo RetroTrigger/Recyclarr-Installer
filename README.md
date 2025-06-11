@@ -27,7 +27,7 @@ bash <(curl -s https://raw.githubusercontent.com/RetroTrigger/Recyclarr-Installe
 
 ## 📋 Requirements
 
-- Linux (Debian/Ubuntu or compatible)
+- Linux with a supported package manager (`apt`, `dnf`, `yum`, `pacman`, `zypper`, or `apk`)
 - Internet access (to download Recyclarr and config)
 
 ## 🔥 After Install
