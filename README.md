@@ -11,7 +11,7 @@ bash <(curl -s https://raw.githubusercontent.com/RetroTrigger/Recyclarr-Installe
 ```
 ### Features
 
-- ✅ No manual steps
+- ✅ Minimal setup—only API keys are prompted interactively
 - ✅ Safe — API keys are prompted securely
 - ✅ Config and cron set up automatically
 
